@@ -6,7 +6,44 @@
     <title>Resonote</title>
   </head>
   <body>
-    <div id="app"></div>
+    <main id="app">
+      <header>
+        <h1>Resonote</h1>
+        <p class="tagline">Recognize songs from your own library. Everything runs in your browser.</p>
+      </header>
+
+      <section aria-labelledby="library-heading">
+        <h2 id="library-heading">Library</h2>
+        <label id="drop-zone" class="drop-zone">
+          <input id="song-input" type="file" accept="audio/*" multiple hidden />
+          <span class="drop-title">Add songs</span>
+          <span class="drop-hint">Drop audio files here or click to choose</span>
+        </label>
+        <p id="library-empty" class="muted">No songs yet.</p>
+        <ul id="song-list" class="song-list"></ul>
+      </section>
+
+      <section aria-labelledby="identify-heading">
+        <h2 id="identify-heading">Identify</h2>
+        <p class="muted">Pick an audio file and the part to listen to. (Microphone input comes next.)</p>
+        <form id="identify-form" class="identify-form">
+          <label class="field field-file">
+            <span>Audio file</span>
+            <input id="clip-input" type="file" accept="audio/*" required />
+          </label>
+          <label class="field">
+            <span>Start (s)</span>
+            <input id="clip-start" type="number" min="0" step="0.1" value="30" />
+          </label>
+          <label class="field">
+            <span>Length (s)</span>
+            <input id="clip-length" type="number" min="1" max="60" step="1" value="10" />
+          </label>
+          <button id="identify-button" type="submit" disabled>Identify</button>
+        </form>
+        <div id="result" class="result" hidden aria-live="polite"></div>
+      </section>
+    </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

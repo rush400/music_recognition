@@ -1,0 +1,254 @@
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --text: #1b1b1f;
+  --muted: #6b6b75;
+  --border: #e2e2e6;
+  --accent: #4f46e5;
+  --accent-text: #ffffff;
+  --accent-soft: #eef0ff;
+  --success-soft: #e8f6ee;
+  --success: #1c7c4a;
+  --danger-soft: #fdecec;
+  --danger: #b42318;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131316;
+    --surface: #1c1c21;
+    --text: #ececf0;
+    --muted: #9a9aa6;
+    --border: #2e2e36;
+    --accent: #8b85ff;
+    --accent-text: #131316;
+    --accent-soft: #24233a;
+    --success-soft: #16291f;
+    --success: #6fd39d;
+    --danger-soft: #2d1717;
+    --danger: #ff8a80;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 16px 64px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+h2 {
+  margin: 0 0 12px;
+  font-size: 1.125rem;
+}
+
+.tagline,
+.muted {
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+
+section {
+  margin-top: 32px;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 24px 16px;
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.drop-zone:hover,
+.drop-zone:focus-within,
+.drop-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.drop-title {
+  font-weight: 600;
+}
+
+.drop-hint {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+#library-empty {
+  margin-top: 12px;
+}
+
+.song-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.song {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.song:first-child {
+  border-top: none;
+}
+
+.song-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.song-meta {
+  color: var(--muted);
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.song-pending .song-name {
+  color: var(--muted);
+}
+
+.song-error .song-meta {
+  color: var(--danger);
+}
+
+.icon-button {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.identify-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.field-file {
+  flex: 1 1 100%;
+}
+
+.field input[type='number'] {
+  width: 96px;
+}
+
+input {
+  font: inherit;
+  color: var(--text);
+}
+
+input[type='number'] {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+
+button[type='submit'] {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button[type='submit']:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.result {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+}
+
+.result p {
+  margin: 0;
+}
+
+.result-match {
+  background: var(--success-soft);
+}
+
+.result-match .result-title {
+  color: var(--success);
+}
+
+.result-error {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.result-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.result-detail {
+  margin-top: 2px;
+}
+
+.result-stats {
+  margin-top: 8px !important;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
