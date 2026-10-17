@@ -20,6 +20,9 @@ const identifyButton = $<HTMLButtonElement>('identify-button');
 const resultBox = $<HTMLDivElement>('result');
 const logoButton = $<HTMLButtonElement>('logo-button');
 const logoStatus = $<HTMLParagraphElement>('logo-status');
+const listenView = $<HTMLDivElement>('listen-view');
+const libraryView = $<HTMLDivElement>('library-view');
+const libraryCount = $<HTMLParagraphElement>('library-count');
 
 /** Listening: first match attempt, then every CHECK_EVERY_SEC until MAX_SEC. */
 const LISTEN_FIRST_CHECK_SEC = 4;
@@ -55,8 +58,18 @@ function listeningText(rec: MicRecorder): string {
   return `Listening… ${Math.floor(rec.durationSec)} s · tap to stop`;
 }
 
+/** Two screens, picked by the URL hash so the back button works: listen (default) and #library. */
+function showView(): void {
+  const onLibrary = location.hash === '#library';
+  listenView.hidden = onLibrary;
+  libraryView.hidden = !onLibrary;
+  window.scrollTo(0, 0);
+}
+
 function updateControls(): void {
   libraryEmpty.hidden = songList.children.length > 0;
+  libraryCount.textContent =
+    library.size === 0 ? 'Your library is empty' : `${library.size} ${library.size === 1 ? 'song' : 'songs'} in your library`;
   const notReady = library.size === 0 || busy > 0;
   identifyButton.disabled = notReady || recorder !== null || identifying;
 
@@ -346,4 +359,6 @@ async function loadLibrary(): Promise<void> {
   }
 }
 
+window.addEventListener('hashchange', showView);
+showView();
 void loadLibrary();

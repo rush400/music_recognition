@@ -7,59 +7,70 @@
     <link
       rel="icon"
       type="image/svg+xml"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23f97316'/%3E%3Ctext x='50' y='52' text-anchor='middle' dominant-baseline='central' fill='%23fff' font-family='system-ui, sans-serif' font-size='44' font-weight='800' letter-spacing='-1'%3ERM%3C/text%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%232563eb'/%3E%3Ctext x='50' y='52' text-anchor='middle' dominant-baseline='central' fill='%23fff' font-family='system-ui, sans-serif' font-size='44' font-weight='800' letter-spacing='-1'%3ERM%3C/text%3E%3C/svg%3E"
     />
   </head>
   <body>
     <main id="app">
-      <header>
-        <h1>Recognize</h1>
-        <p class="tagline">Recognize songs from your own library. Everything runs in your browser.</p>
-      </header>
+      <div id="listen-view" class="view view-listen">
+        <header>
+          <h1>Recognize</h1>
+          <p class="tagline">Recognize songs from your own library. Everything runs in your browser.</p>
+        </header>
 
-      <div class="hero">
-        <button id="logo-button" class="logo-button" type="button" data-state="loading" aria-label="Identify song" disabled>
-          <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
-            <circle cx="50" cy="50" r="50" fill="currentColor" />
-            <text x="50" y="52" text-anchor="middle" dominant-baseline="central" fill="#fff" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="40" font-weight="800" letter-spacing="-1">RM</text>
-          </svg>
-        </button>
-        <p id="logo-status" class="logo-status" aria-live="polite">Loading your library…</p>
-        <div id="result" class="result" hidden aria-live="polite"></div>
+        <div class="hero">
+          <button id="logo-button" class="logo-button" type="button" data-state="loading" aria-label="Identify song" disabled>
+            <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="50" fill="currentColor" />
+              <text x="50" y="52" text-anchor="middle" dominant-baseline="central" fill="#fff" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="40" font-weight="800" letter-spacing="-1">RM</text>
+            </svg>
+          </button>
+          <p id="logo-status" class="logo-status" aria-live="polite">Loading your library…</p>
+          <div id="result" class="result" hidden aria-live="polite"></div>
+        </div>
+
+        <section class="from-file-card">
+          <details class="from-file">
+            <summary>Or upload a song instead</summary>
+            <form id="identify-form" class="identify-form">
+              <label class="field field-file">
+                <span>Audio file</span>
+                <input id="clip-input" type="file" accept="audio/*" required />
+              </label>
+              <label class="field">
+                <span>Start (s)</span>
+                <input id="clip-start" type="number" min="0" step="0.1" value="30" />
+              </label>
+              <label class="field">
+                <span>Length (s)</span>
+                <input id="clip-length" type="number" min="1" max="60" step="1" value="10" />
+              </label>
+              <button id="identify-button" type="submit" class="primary" disabled>Identify</button>
+            </form>
+          </details>
+        </section>
+
+        <footer class="library-footer">
+          <a href="#library" class="library-link">Want to add songs to your library?</a>
+          <p id="library-count" class="muted"></p>
+        </footer>
       </div>
 
-      <section aria-labelledby="library-heading">
-        <h2 id="library-heading">Library</h2>
-        <label id="drop-zone" class="drop-zone">
-          <input id="song-input" type="file" accept="audio/*" multiple hidden />
-          <span class="drop-title">Add songs</span>
-          <span class="drop-hint">Drop audio files here or click to choose</span>
-        </label>
-        <p id="library-empty" class="muted">No songs yet.</p>
-        <p id="storage-note" class="muted" hidden>This browser isn’t letting Recognize save data, so your library will be cleared when you leave the page.</p>
-        <ul id="song-list" class="song-list"></ul>
-      </section>
+      <div id="library-view" class="view view-library" hidden>
+        <a href="#" class="back-link">← Back</a>
 
-      <section class="from-file-card">
-        <details class="from-file">
-          <summary>Identify from a file instead</summary>
-          <form id="identify-form" class="identify-form">
-            <label class="field field-file">
-              <span>Audio file</span>
-              <input id="clip-input" type="file" accept="audio/*" required />
-            </label>
-            <label class="field">
-              <span>Start (s)</span>
-              <input id="clip-start" type="number" min="0" step="0.1" value="30" />
-            </label>
-            <label class="field">
-              <span>Length (s)</span>
-              <input id="clip-length" type="number" min="1" max="60" step="1" value="10" />
-            </label>
-            <button id="identify-button" type="submit" class="primary" disabled>Identify</button>
-          </form>
-        </details>
-      </section>
+        <section aria-labelledby="library-heading">
+          <h2 id="library-heading">Library</h2>
+          <label id="drop-zone" class="drop-zone">
+            <input id="song-input" type="file" accept="audio/*" multiple hidden />
+            <span class="drop-title">Add songs</span>
+            <span class="drop-hint">Drop audio files here or click to choose</span>
+          </label>
+          <p id="library-empty" class="muted">No songs yet.</p>
+          <p id="storage-note" class="muted" hidden>This browser isn’t letting Recognize save data, so your library will be cleared when you leave the page.</p>
+          <ul id="song-list" class="song-list"></ul>
+        </section>
+      </div>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

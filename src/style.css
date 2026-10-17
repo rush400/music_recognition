@@ -4,10 +4,10 @@
   --text: #1b1b1f;
   --muted: #6b6b75;
   --border: #e2e2e6;
-  --accent: #c2410c;
+  --accent: #1d4ed8;
   --accent-text: #ffffff;
-  --accent-soft: #fff4ec;
-  --logo: #f97316;
+  --accent-soft: #eff6ff;
+  --logo: #2563eb;
   --success-soft: #e8f6ee;
   --success: #1c7c4a;
   --danger-soft: #fdecec;
@@ -29,7 +29,24 @@ body {
 main {
   max-width: 640px;
   margin: 0 auto;
-  padding: 40px 16px 64px;
+  padding: 0 16px;
+}
+
+.view[hidden] {
+  display: none;
+}
+
+/* Listen view fills the window: header on top, logo centered, library link at the bottom. */
+.view-listen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 40px 0 32px;
+}
+
+.view-library {
+  padding: 32px 0 64px;
 }
 
 header {
@@ -248,15 +265,18 @@ input[type='number'] {
 }
 
 .from-file-card {
+  margin: 0 0 24px;
   padding: 14px 20px;
 }
 
 /* Hero: the logo is the Listen button. */
 .hero {
   display: flex;
+  flex: 1;
   flex-direction: column;
   align-items: center;
-  margin-top: 64px;
+  justify-content: center;
+  padding: 48px 0;
 }
 
 .logo-button {
@@ -284,7 +304,7 @@ input[type='number'] {
   display: block;
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 8px 20px rgb(249 115 22 / 0.35));
+  filter: drop-shadow(0 8px 20px rgb(37 99 235 / 0.35));
 }
 
 .logo-button[data-state='idle']:hover {
@@ -388,5 +408,34 @@ input[type='number'] {
 
 .hero .result {
   align-self: stretch;
+  text-align: center;
+}
+
+.library-footer {
+  text-align: center;
+}
+
+.library-footer p {
+  margin-top: 2px;
+  font-size: 0.875rem;
+}
+
+.library-link,
+.back-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.library-link:hover,
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.view-library section:first-of-type {
+  margin-top: 16px;
+}
+
+.view-listen .from-file summary {
   text-align: center;
 }
