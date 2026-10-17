@@ -198,7 +198,7 @@ input[type='number'] {
   background: var(--bg);
 }
 
-button[type='submit'] {
+.primary {
   padding: 8px 20px;
   border: none;
   border-radius: 8px;
@@ -209,7 +209,7 @@ button[type='submit'] {
   cursor: pointer;
 }
 
-button[type='submit']:disabled {
+.primary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
@@ -251,4 +251,54 @@ button[type='submit']:disabled {
   margin-top: 8px !important;
   color: var(--muted);
   font-size: 0.8125rem;
+}
+
+.listen {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.listen .primary {
+  min-width: 112px;
+  padding: 12px 24px;
+  font-size: 1.0625rem;
+}
+
+.listen-status {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.listen-status[hidden] {
+  display: none;
+}
+
+.meter {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.meter-fill {
+  height: 100%;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.08s linear;
+}
+
+.from-file {
+  margin-top: 20px;
+}
+
+.from-file summary {
+  color: var(--muted);
+  font-size: 0.875rem;
+  cursor: pointer;
 }

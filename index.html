@@ -25,22 +25,32 @@
 
       <section aria-labelledby="identify-heading">
         <h2 id="identify-heading">Identify</h2>
-        <p class="muted">Pick an audio file and the part to listen to. (Microphone input comes next.)</p>
-        <form id="identify-form" class="identify-form">
-          <label class="field field-file">
-            <span>Audio file</span>
-            <input id="clip-input" type="file" accept="audio/*" required />
-          </label>
-          <label class="field">
-            <span>Start (s)</span>
-            <input id="clip-start" type="number" min="0" step="0.1" value="30" />
-          </label>
-          <label class="field">
-            <span>Length (s)</span>
-            <input id="clip-length" type="number" min="1" max="60" step="1" value="10" />
-          </label>
-          <button id="identify-button" type="submit" disabled>Identify</button>
-        </form>
+        <p class="muted">Play a song from your library near your microphone, then press Listen.</p>
+        <div class="listen">
+          <button id="listen-button" type="button" class="primary" disabled>Listen</button>
+          <div id="listen-status" class="listen-status" hidden>
+            <div class="meter" aria-hidden="true"><div id="mic-level" class="meter-fill"></div></div>
+            <span id="listen-text" class="muted">Listening…</span>
+          </div>
+        </div>
+        <details class="from-file">
+          <summary>Identify from a file instead</summary>
+          <form id="identify-form" class="identify-form">
+            <label class="field field-file">
+              <span>Audio file</span>
+              <input id="clip-input" type="file" accept="audio/*" required />
+            </label>
+            <label class="field">
+              <span>Start (s)</span>
+              <input id="clip-start" type="number" min="0" step="0.1" value="30" />
+            </label>
+            <label class="field">
+              <span>Length (s)</span>
+              <input id="clip-length" type="number" min="1" max="60" step="1" value="10" />
+            </label>
+            <button id="identify-button" type="submit" class="primary" disabled>Identify</button>
+          </form>
+        </details>
         <div id="result" class="result" hidden aria-live="polite"></div>
       </section>
     </main>

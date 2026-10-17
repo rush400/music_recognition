@@ -1,3 +1,4 @@
+import { SAMPLE_RATE } from '../core/config';
 import type { Fingerprint } from '../core/fingerprint';
 import type { FingerprintRequest, FingerprintResponse } from './protocol';
 
@@ -28,12 +29,12 @@ export class FingerprintWorker {
     };
   }
 
-  /** Fingerprints mono PCM at SAMPLE_RATE. `pcm`'s buffer is transferred and becomes unusable. */
-  fingerprint(pcm: Float32Array): Promise<Fingerprint> {
+  /** Fingerprints mono PCM, resampling first if needed. `pcm`'s buffer is transferred and becomes unusable. */
+  fingerprint(pcm: Float32Array, sampleRate = SAMPLE_RATE): Promise<Fingerprint> {
     const id = this.nextId++;
     return new Promise((resolve, reject) => {
       this.pending.set(id, { resolve, reject });
-      const req: FingerprintRequest = { id, pcm };
+      const req: FingerprintRequest = { id, pcm, sampleRate };
       this.worker.postMessage(req, [pcm.buffer]);
     });
   }

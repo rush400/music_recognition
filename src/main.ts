@@ -1,5 +1,6 @@
 import './style.css';
 import { decodeFile, excerpt } from './audio/decode';
+import { MicRecorder } from './audio/mic';
 import { Library, type Identification, type Song } from './library';
 import { FingerprintWorker } from './worker/client';
 
@@ -15,14 +16,25 @@ const clipStart = $<HTMLInputElement>('clip-start');
 const clipLength = $<HTMLInputElement>('clip-length');
 const identifyButton = $<HTMLButtonElement>('identify-button');
 const resultBox = $<HTMLDivElement>('result');
+const listenButton = $<HTMLButtonElement>('listen-button');
+const listenStatus = $<HTMLDivElement>('listen-status');
+const micLevel = $<HTMLDivElement>('mic-level');
+const listenText = $<HTMLSpanElement>('listen-text');
+
+/** Listening: first match attempt, then every CHECK_EVERY_SEC until MAX_SEC. */
+const LISTEN_FIRST_CHECK_SEC = 4;
+const LISTEN_CHECK_EVERY_SEC = 2;
+const LISTEN_MAX_SEC = 15;
 
 const library = new Library();
 const worker = new FingerprintWorker();
 /** Songs still being decoded/fingerprinted, so Identify waits for them. */
 let busy = 0;
+/** The active mic session, or null when not listening. */
+let recorder: MicRecorder | null = null;
 
 function formatTime(sec: number): string {
-  const s = Math.max(0, Math.floor(sec));
+  const s = Math.max(0, Math.round(sec));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
@@ -32,7 +44,11 @@ function stripExtension(name: string): string {
 
 function updateControls(): void {
   libraryEmpty.hidden = songList.children.length > 0;
-  identifyButton.disabled = library.size === 0 || busy > 0;
+  const notReady = library.size === 0 || busy > 0;
+  identifyButton.disabled = notReady || recorder !== null;
+  listenButton.disabled = notReady && recorder === null;
+  listenButton.textContent = recorder ? 'Stop' : 'Listen';
+  listenStatus.hidden = recorder === null;
 }
 
 function renderSong(item: HTMLLIElement, song: Song): void {
@@ -113,7 +129,7 @@ async function addSongs(files: File[]): Promise<void> {
   }
 }
 
-function showResult({ result, song }: Identification): void {
+function showResult({ result, song }: Identification, offsetLabel = 'Clip starts at'): void {
   resultBox.hidden = false;
   resultBox.replaceChildren();
   const title = document.createElement('p');
@@ -123,11 +139,11 @@ function showResult({ result, song }: Identification): void {
   if (song) {
     resultBox.className = 'result result-match';
     title.textContent = song.name;
-    detail.textContent = `Clip starts at ${formatTime(result.offsetSec)} · ${Math.round(result.confidence * 100)}% confidence`;
+    detail.textContent = `${offsetLabel} ${formatTime(result.offsetSec)} · ${Math.round(result.confidence * 100)}% confidence`;
   } else {
     resultBox.className = 'result result-none';
     title.textContent = 'No match';
-    detail.textContent = 'This clip doesn’t match any song in your library.';
+    detail.textContent = 'What it heard doesn’t match any song in your library.';
   }
   const stats = document.createElement('p');
   stats.className = 'result-stats';
@@ -165,6 +181,86 @@ async function identify(): Promise<void> {
     updateControls();
   }
 }
+
+function micErrorMessage(err: unknown): string {
+  const name = err instanceof DOMException ? err.name : '';
+  if (name === 'NotAllowedError') return 'Microphone access was blocked. Allow it in your browser’s site settings and try again.';
+  if (name === 'NotFoundError') return 'No microphone was found.';
+  if (name === 'NotReadableError') return 'The microphone is in use by another app.';
+  return 'Could not start the microphone.';
+}
+
+/** Resolves true once `rec` has `sec` seconds of audio, or false if listening was stopped first. */
+function recorded(rec: MicRecorder, sec: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const poll = () => {
+      if (recorder !== rec) resolve(false);
+      else if (rec.durationSec >= sec) resolve(true);
+      else setTimeout(poll, 100);
+    };
+    poll();
+  });
+}
+
+function drawLevel(rec: MicRecorder): void {
+  if (recorder !== rec) return;
+  micLevel.style.transform = `scaleX(${rec.level})`;
+  listenText.textContent = `Listening… ${Math.floor(rec.durationSec)} s`;
+  requestAnimationFrame(() => drawLevel(rec));
+}
+
+function stopListening(): void {
+  recorder?.stop();
+  recorder = null;
+  updateControls();
+}
+
+/**
+ * Records from the mic and re-matches everything heard so far every few seconds.
+ * Stops early once two checks in a row agree on the same song (one lucky match
+ * on a short clip isn't trusted); otherwise gives the final verdict at LISTEN_MAX_SEC.
+ */
+async function listen(): Promise<void> {
+  resultBox.hidden = true;
+  let rec: MicRecorder;
+  try {
+    rec = await MicRecorder.start();
+  } catch (err) {
+    console.error(err);
+    showMessage(micErrorMessage(err), true);
+    return;
+  }
+  recorder = rec;
+  updateControls();
+  drawLevel(rec);
+
+  let checkAt = LISTEN_FIRST_CHECK_SEC;
+  let previousSongId: number | null = null;
+  try {
+    while (await recorded(rec, checkAt)) {
+      const fp = await worker.fingerprint(rec.samples(), rec.sampleRate);
+      if (recorder !== rec) return;
+      const id = library.identify(fp);
+      const last = checkAt >= LISTEN_MAX_SEC;
+      if (last || (id.song && id.song.id === previousSongId)) {
+        showResult(id, 'You started listening at');
+        return;
+      }
+      previousSongId = id.song?.id ?? null;
+      checkAt = Math.min(LISTEN_MAX_SEC, checkAt + LISTEN_CHECK_EVERY_SEC);
+    }
+  } catch (err) {
+    console.error(err);
+    showMessage('Something went wrong while listening.', true);
+  } finally {
+    if (recorder === rec) stopListening();
+  }
+}
+
+listenButton.addEventListener('click', () => {
+  if (recorder) stopListening();
+  else void listen();
+});
 
 songInput.addEventListener('change', () => {
   void addSongs([...(songInput.files ?? [])]);
