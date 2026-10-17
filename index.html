@@ -3,14 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Resonote</title>
+    <title>Recognize</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23f97316'/%3E%3Ctext x='50' y='52' text-anchor='middle' dominant-baseline='central' fill='%23fff' font-family='system-ui, sans-serif' font-size='44' font-weight='800' letter-spacing='-1'%3ERM%3C/text%3E%3C/svg%3E"
+    />
   </head>
   <body>
     <main id="app">
       <header>
-        <h1>Resonote</h1>
+        <h1>Recognize</h1>
         <p class="tagline">Recognize songs from your own library. Everything runs in your browser.</p>
       </header>
+
+      <div class="hero">
+        <button id="logo-button" class="logo-button" type="button" data-state="loading" aria-label="Identify song" disabled>
+          <svg class="logo" viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="50" fill="currentColor" />
+            <text x="50" y="52" text-anchor="middle" dominant-baseline="central" fill="#fff" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="40" font-weight="800" letter-spacing="-1">RM</text>
+          </svg>
+        </button>
+        <p id="logo-status" class="logo-status" aria-live="polite">Loading your library…</p>
+        <div id="result" class="result" hidden aria-live="polite"></div>
+      </div>
 
       <section aria-labelledby="library-heading">
         <h2 id="library-heading">Library</h2>
@@ -20,20 +36,11 @@
           <span class="drop-hint">Drop audio files here or click to choose</span>
         </label>
         <p id="library-empty" class="muted">No songs yet.</p>
-        <p id="storage-note" class="muted" hidden>This browser isn’t letting Resonote save data, so your library will be cleared when you leave the page.</p>
+        <p id="storage-note" class="muted" hidden>This browser isn’t letting Recognize save data, so your library will be cleared when you leave the page.</p>
         <ul id="song-list" class="song-list"></ul>
       </section>
 
-      <section aria-labelledby="identify-heading">
-        <h2 id="identify-heading">Identify</h2>
-        <p class="muted">Play a song from your library near your microphone, then press Listen.</p>
-        <div class="listen">
-          <button id="listen-button" type="button" class="primary" disabled>Listen</button>
-          <div id="listen-status" class="listen-status" hidden>
-            <div class="meter" aria-hidden="true"><div id="mic-level" class="meter-fill"></div></div>
-            <span id="listen-text" class="muted">Listening…</span>
-          </div>
-        </div>
+      <section class="from-file-card">
         <details class="from-file">
           <summary>Identify from a file instead</summary>
           <form id="identify-form" class="identify-form">
@@ -52,7 +59,6 @@
             <button id="identify-button" type="submit" class="primary" disabled>Identify</button>
           </form>
         </details>
-        <div id="result" class="result" hidden aria-live="polite"></div>
       </section>
     </main>
     <script type="module" src="/src/main.ts"></script>

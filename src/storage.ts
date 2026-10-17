@@ -4,6 +4,7 @@ import type { Song } from './library';
 /** A library song with its fingerprint, as persisted. */
 export interface StoredSong extends Song, Fingerprint {}
 
+// Keeps the app's original name so libraries saved before the rename still load.
 const DB_NAME = 'resonote';
 const DB_VERSION = 1;
 const SONGS = 'songs';

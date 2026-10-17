@@ -26,7 +26,7 @@ class Tap extends AudioWorkletProcessor {
     return true;
   }
 }
-registerProcessor('resonote-tap', Tap);
+registerProcessor('recognize-tap', Tap);
 `;
 
 /**
@@ -61,7 +61,7 @@ export class MicRecorder {
       } finally {
         URL.revokeObjectURL(url);
       }
-      const node = new AudioWorkletNode(ctx, 'resonote-tap');
+      const node = new AudioWorkletNode(ctx, 'recognize-tap');
       // Route through a muted gain so the graph is pulled without echoing the mic.
       const mute = ctx.createGain();
       mute.gain.value = 0;

@@ -18,10 +18,8 @@ const clipStart = $<HTMLInputElement>('clip-start');
 const clipLength = $<HTMLInputElement>('clip-length');
 const identifyButton = $<HTMLButtonElement>('identify-button');
 const resultBox = $<HTMLDivElement>('result');
-const listenButton = $<HTMLButtonElement>('listen-button');
-const listenStatus = $<HTMLDivElement>('listen-status');
-const micLevel = $<HTMLDivElement>('mic-level');
-const listenText = $<HTMLSpanElement>('listen-text');
+const logoButton = $<HTMLButtonElement>('logo-button');
+const logoStatus = $<HTMLParagraphElement>('logo-status');
 
 /** Listening: first match attempt, then every CHECK_EVERY_SEC until MAX_SEC. */
 const LISTEN_FIRST_CHECK_SEC = 4;
@@ -36,6 +34,13 @@ let busy = 0;
 let recorder: MicRecorder | null = null;
 /** Where the library is saved, or null if this browser won't let us (it then lasts until reload). */
 let store: SongStore | null = null;
+/** True while the saved library is being read at startup. */
+let loadingLibrary = false;
+/** True while a file is being identified. */
+let identifying = false;
+
+/** What the logo button shows; the logo spins in every state but idle and disabled. */
+type LogoState = 'listening' | 'identifying' | 'loading' | 'disabled' | 'idle';
 
 function formatTime(sec: number): string {
   const s = Math.max(0, Math.round(sec));
@@ -46,13 +51,33 @@ function stripExtension(name: string): string {
   return name.replace(/\.[^.]+$/, '');
 }
 
+function listeningText(rec: MicRecorder): string {
+  return `Listening… ${Math.floor(rec.durationSec)} s · tap to stop`;
+}
+
 function updateControls(): void {
   libraryEmpty.hidden = songList.children.length > 0;
   const notReady = library.size === 0 || busy > 0;
-  identifyButton.disabled = notReady || recorder !== null;
-  listenButton.disabled = notReady && recorder === null;
-  listenButton.textContent = recorder ? 'Stop' : 'Listen';
-  listenStatus.hidden = recorder === null;
+  identifyButton.disabled = notReady || recorder !== null || identifying;
+
+  const state: LogoState = recorder
+    ? 'listening'
+    : identifying
+      ? 'identifying'
+      : busy > 0
+        ? 'loading'
+        : library.size === 0
+          ? 'disabled'
+          : 'idle';
+  logoButton.dataset.state = state;
+  logoButton.disabled = state !== 'idle' && state !== 'listening';
+  logoButton.setAttribute('aria-label', recorder ? 'Stop listening' : 'Identify song');
+  logoButton.setAttribute('aria-busy', String(state !== 'idle' && state !== 'disabled'));
+  if (recorder) logoStatus.textContent = listeningText(recorder);
+  else if (identifying) logoStatus.textContent = 'Identifying…';
+  else if (busy > 0) logoStatus.textContent = loadingLibrary ? 'Loading your library…' : 'Adding songs…';
+  else if (library.size === 0) logoStatus.textContent = 'Add songs to your library to start';
+  else logoStatus.textContent = 'Tap to identify';
 }
 
 function renderSong(item: HTMLLIElement, song: Song): void {
@@ -174,8 +199,9 @@ async function identify(): Promise<void> {
   if (!file) return;
   const start = Number(clipStart.value) || 0;
   const length = Number(clipLength.value) || 10;
-  identifyButton.disabled = true;
-  showMessage('Listening…');
+  identifying = true;
+  resultBox.hidden = true;
+  updateControls();
   try {
     const { pcm, durationSec } = await decodeFile(file);
     if (start >= durationSec) {
@@ -188,6 +214,7 @@ async function identify(): Promise<void> {
     console.error(err);
     showMessage('Could not read this file.', true);
   } finally {
+    identifying = false;
     updateControls();
   }
 }
@@ -214,14 +241,15 @@ function recorded(rec: MicRecorder, sec: number): Promise<boolean> {
 
 function drawLevel(rec: MicRecorder): void {
   if (recorder !== rec) return;
-  micLevel.style.transform = `scaleX(${rec.level})`;
-  listenText.textContent = `Listening… ${Math.floor(rec.durationSec)} s`;
+  logoButton.style.setProperty('--level', rec.level.toFixed(3));
+  logoStatus.textContent = listeningText(rec);
   requestAnimationFrame(() => drawLevel(rec));
 }
 
 function stopListening(): void {
   recorder?.stop();
   recorder = null;
+  logoButton.style.setProperty('--level', '0');
   updateControls();
 }
 
@@ -267,7 +295,7 @@ async function listen(): Promise<void> {
   }
 }
 
-listenButton.addEventListener('click', () => {
+logoButton.addEventListener('click', () => {
   if (recorder) stopListening();
   else void listen();
 });
@@ -296,6 +324,7 @@ identifyForm.addEventListener('submit', (e) => {
 /** Loads the saved library. Identify stays disabled until it's in. */
 async function loadLibrary(): Promise<void> {
   busy++;
+  loadingLibrary = true;
   libraryEmpty.textContent = 'Loading your library…';
   updateControls();
   try {
@@ -311,6 +340,7 @@ async function loadLibrary(): Promise<void> {
     storageNote.hidden = false;
   } finally {
     libraryEmpty.textContent = 'No songs yet.';
+    loadingLibrary = false;
     busy--;
     updateControls();
   }
