@@ -2,6 +2,7 @@ import './style.css';
 import { decodeFile, excerpt } from './audio/decode';
 import { MicRecorder } from './audio/mic';
 import { Library, type Identification, type Song } from './library';
+import { SongStore } from './storage';
 import { FingerprintWorker } from './worker/client';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -10,6 +11,7 @@ const dropZone = $<HTMLLabelElement>('drop-zone');
 const songInput = $<HTMLInputElement>('song-input');
 const songList = $<HTMLUListElement>('song-list');
 const libraryEmpty = $<HTMLParagraphElement>('library-empty');
+const storageNote = $<HTMLParagraphElement>('storage-note');
 const identifyForm = $<HTMLFormElement>('identify-form');
 const clipInput = $<HTMLInputElement>('clip-input');
 const clipStart = $<HTMLInputElement>('clip-start');
@@ -32,6 +34,8 @@ const worker = new FingerprintWorker();
 let busy = 0;
 /** The active mic session, or null when not listening. */
 let recorder: MicRecorder | null = null;
+/** Where the library is saved, or null if this browser won't let us (it then lasts until reload). */
+let store: SongStore | null = null;
 
 function formatTime(sec: number): string {
   const s = Math.max(0, Math.round(sec));
@@ -68,6 +72,7 @@ function renderSong(item: HTMLLIElement, song: Song): void {
   remove.setAttribute('aria-label', `Remove ${song.name}`);
   remove.onclick = () => {
     library.remove(song.id);
+    store?.delete(song.id).catch((err) => console.error('Could not delete saved song', err));
     item.remove();
     updateControls();
   };
@@ -118,7 +123,12 @@ async function addSongs(files: File[]): Promise<void> {
       const { pcm, durationSec } = await decodeFile(file);
       renderSongStatus(item, name, 'Fingerprinting…');
       const fp = await worker.fingerprint(pcm);
-      renderSong(item, library.add(name, durationSec, fp));
+      const song = library.add(name, durationSec, fp);
+      renderSong(item, song);
+      store?.put(song, fp).catch((err) => {
+        console.error('Could not save song', err);
+        item.querySelector('.song-meta')!.textContent += ' · not saved';
+      });
     } catch (err) {
       console.error(err);
       renderSongStatus(item, name, 'Could not read this file', true);
@@ -283,4 +293,27 @@ identifyForm.addEventListener('submit', (e) => {
   void identify();
 });
 
-updateControls();
+/** Loads the saved library. Identify stays disabled until it's in. */
+async function loadLibrary(): Promise<void> {
+  busy++;
+  libraryEmpty.textContent = 'Loading your library…';
+  updateControls();
+  try {
+    store = await SongStore.open();
+    for (const { hashes, times, ...song } of await store.getAll()) {
+      library.restore(song, { hashes, times });
+      const item = document.createElement('li');
+      renderSong(item, song);
+      songList.append(item);
+    }
+  } catch (err) {
+    console.error('Library storage unavailable', err);
+    storageNote.hidden = false;
+  } finally {
+    libraryEmpty.textContent = 'No songs yet.';
+    busy--;
+    updateControls();
+  }
+}
+
+void loadLibrary();

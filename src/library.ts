@@ -27,6 +27,13 @@ export class Library {
     return song;
   }
 
+  /** Re-adds a previously saved song under its original id. */
+  restore(song: Song, fp: Fingerprint): void {
+    this.songs.set(song.id, { ...song });
+    this.index.add(song.id, fp);
+    this.nextId = Math.max(this.nextId, song.id + 1);
+  }
+
   remove(id: number): void {
     if (!this.songs.delete(id)) return;
     this.index.remove(id);

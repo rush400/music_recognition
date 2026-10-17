@@ -32,6 +32,14 @@ describe('Library', () => {
     expect(song).toBeNull();
   });
 
+  it('restores saved songs under their ids and keeps new ids unique', () => {
+    const lib = new Library();
+    const fp = fingerprint(songs[2]);
+    lib.restore({ id: 7, name: 'Saved', durationSec: SONG_SEC, hashCount: fp.hashes.length }, fp);
+    expect(lib.identify(clip(2)).song?.name).toBe('Saved');
+    expect(lib.add('New', SONG_SEC, fingerprint(songs[0])).id).toBe(8);
+  });
+
   it('returns no song for an empty library', () => {
     const { result, song } = new Library().identify(clip(2));
     expect(result.matched).toBe(false);
